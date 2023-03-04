@@ -1,7 +1,8 @@
 package com.lyyang.test.testgrpc.grpc.server.security;
 
-import com.nimbusds.jose.shaded.json.JSONArray;
-import com.nimbusds.jose.shaded.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,7 +10,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -17,8 +19,6 @@ import java.util.stream.Collectors;
 public class KeyCloakGrantedAuthoritiesConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
 
     private static final String SCOPE_AUTHORITY_PREFIX = "ROLE_";
-    private static final Collection<String> WELL_KNOWN_SCOPE_ATTRIBUTE_NAMES =
-            Arrays.asList("realm_access");
 
     @Override
     public Collection<GrantedAuthority> convert(Jwt jwt) {
@@ -32,21 +32,22 @@ public class KeyCloakGrantedAuthoritiesConverter implements Converter<Jwt, Colle
 
     private Collection<String> getScopes(Jwt jwt) {
         Collection<String> result = new ArrayList<>();
-        for (String attributeName : WELL_KNOWN_SCOPE_ATTRIBUTE_NAMES) {
-            JSONObject realm_access = (JSONObject) jwt.getClaims().get(attributeName);
-            if (Objects.isNull(realm_access)) {
-                return Collections.emptyList();
+
+        try {
+            JsonArray grpcServerRoles = JsonParser
+                    .parseString(jwt.getClaims().get("resource_access").toString())
+                    .getAsJsonObject()
+                    .getAsJsonObject("grpc-server")
+                    .getAsJsonArray("roles");
+
+            for (JsonElement role : grpcServerRoles) {
+                result.add(role.getAsString());
             }
 
-            JSONArray roles = (JSONArray) realm_access.get("roles");
-            if (Objects.isNull(roles)) {
-                return Collections.emptyList();
-            }
-
-            for (Object role : roles) {
-                result.add((String) role);
-            }
+        } catch (NullPointerException npe) {
+            log.info("Can not find roles in Claims");
         }
+
         return result;
     }
 

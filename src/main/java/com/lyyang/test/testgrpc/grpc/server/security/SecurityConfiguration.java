@@ -34,8 +34,9 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    JwtAuthenticationProvider jwtAuthenticationProvider(final JwtAuthenticationConverter jwtAuthenticationConverter) {
-        final JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder());
+    JwtAuthenticationProvider jwtAuthenticationProvider(final JwtAuthenticationConverter jwtAuthenticationConverter,
+                                                        final JwtDecoder jwtDecoder) {
+        final JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder);
         provider.setJwtAuthenticationConverter(jwtAuthenticationConverter);
         return provider;
     }
