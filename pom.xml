@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.lyyang.test</groupId>
-    <artifactId>test-grpc-server</artifactId>
+    <artifactId>test-keycloak-grpc-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>gRPC Server</name>
+    <name>Keycloak gRPC Server</name>
     <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>11</java.version>
