@@ -1,4 +1,4 @@
-package com.lyyang.test.testgrpc.model;
+package com.lyyang.test.testgrpc.grpc.server.model;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 

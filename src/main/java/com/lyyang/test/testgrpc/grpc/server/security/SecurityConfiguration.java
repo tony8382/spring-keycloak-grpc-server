@@ -1,9 +1,6 @@
-package com.lyyang.test.testgrpc.security;
+package com.lyyang.test.testgrpc.grpc.server.security;
 
 
-import com.lyyang.test.testgrpc.jwt.JwtGrantedAuthoritiesConverter;
-import com.lyyang.test.testgrpc.jwt.JwtProperties;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.security.authentication.BearerAuthenticationReader;
 import net.devh.boot.grpc.server.security.authentication.GrpcAuthenticationReader;
@@ -19,8 +16,6 @@ import org.springframework.security.oauth2.server.resource.BearerTokenAuthentica
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationProvider;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,17 +25,17 @@ import java.util.List;
 public class SecurityConfiguration {
 
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter(final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter) {
+    JwtAuthenticationConverter jwtAuthenticationConverter(
+            final KeyCloakGrantedAuthoritiesConverter keyCloakGrantedAuthoritiesConverter) {
 
         final JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
+        converter.setJwtGrantedAuthoritiesConverter(keyCloakGrantedAuthoritiesConverter);
         return converter;
     }
 
     @Bean
-    JwtAuthenticationProvider jwtAuthenticationProvider(final JwtAuthenticationConverter jwtAuthenticationConverter, final JwtDecoder jwtDecoder) {
-
-        final JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder);
+    JwtAuthenticationProvider jwtAuthenticationProvider(final JwtAuthenticationConverter jwtAuthenticationConverter) {
+        final JwtAuthenticationProvider provider = new JwtAuthenticationProvider(jwtDecoder());
         provider.setJwtAuthenticationConverter(jwtAuthenticationConverter);
         return provider;
     }
@@ -58,9 +53,9 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(final JwtProperties jwtProperties) {
-        SecretKey originalKey = new SecretKeySpec(jwtProperties.getSignKey().getBytes(), SignatureAlgorithm.HS256.getJcaName());
-        return NimbusJwtDecoder.withSecretKey(originalKey).build();
+    JwtDecoder jwtDecoder() {
+        final String endpointURI = "http://localhost:8080/auth/realms/tony-test/protocol/openid-connect/certs";
+        return NimbusJwtDecoder.withJwkSetUri(endpointURI).build();
     }
 
 }
